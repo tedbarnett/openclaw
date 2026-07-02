@@ -613,6 +613,10 @@ extension SettingsProTab {
         return providerSelection == .openAIRealtime || self.appModel.talkMode.gatewayTalkUsesRealtime
     }
 
+    var shouldShowElevenLabsVoicePicker: Bool {
+        TalkModeProviderSelection.resolved(self.talkProviderSelectionRaw) == .nativeElevenLabs
+    }
+
     var talkProviderSelectionBinding: Binding<String> {
         Binding(
             get: { self.talkProviderSelectionRaw },
@@ -633,6 +637,16 @@ extension SettingsProTab {
             })
     }
 
+    var talkElevenLabsVoiceSelectionBinding: Binding<String> {
+        Binding(
+            get: { self.talkElevenLabsVoiceSelectionRaw },
+            set: { newValue in
+                let voice = TalkModeElevenLabsVoiceSelection.resolvedVoiceId(newValue) ?? ""
+                self.talkElevenLabsVoiceSelectionRaw = voice
+                self.appModel.setTalkElevenLabsVoiceSelection(voice)
+            })
+    }
+
     var talkSpeakerphoneBinding: Binding<Bool> {
         Binding(
             get: { self.talkSpeakerphoneEnabled },
@@ -645,6 +659,48 @@ extension SettingsProTab {
     var talkApiKeyStatus: String {
         guard self.appModel.talkMode.gatewayTalkConfigLoaded else { return "Not loaded" }
         return self.appModel.talkMode.gatewayTalkApiKeyConfigured ? "Configured" : "Not configured"
+    }
+
+    var selectedElevenLabsVoiceLabel: String {
+        let voiceId = TalkModeElevenLabsVoiceSelection.resolvedVoiceId(self.talkElevenLabsVoiceSelectionRaw)
+            ?? TalkModeElevenLabsVoiceSelection.defaultVoiceId
+        return TalkModeElevenLabsVoiceSelection.label(for: voiceId, voices: self.elevenLabsVoices)
+    }
+
+    func loadTalkElevenLabsAPIKeyDraftIfNeeded() {
+        guard !self.didLoadTalkElevenLabsAPIKeyDraft else { return }
+        self.didLoadTalkElevenLabsAPIKeyDraft = true
+        self.talkElevenLabsAPIKeyDraft = GatewaySettingsStore.loadTalkProviderApiKey(provider: "elevenlabs") ?? ""
+        if !self.talkElevenLabsAPIKeyDraft.isEmpty {
+            Task { await self.loadElevenLabsVoices() }
+        }
+    }
+
+    func saveTalkElevenLabsAPIKey() {
+        GatewaySettingsStore.saveTalkProviderApiKey(self.talkElevenLabsAPIKeyDraft, provider: "elevenlabs")
+        self.appModel.talkMode.applyProviderSelectionChanged()
+        Task { await self.loadElevenLabsVoices() }
+    }
+
+    @MainActor
+    func loadElevenLabsVoices() async {
+        let apiKey = self.talkElevenLabsAPIKeyDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !apiKey.isEmpty else {
+            self.elevenLabsVoices = []
+            self.elevenLabsVoicesStatus = "Paste your ElevenLabs API key to load your voices."
+            return
+        }
+        self.isLoadingElevenLabsVoices = true
+        self.elevenLabsVoicesStatus = "Loading voices..."
+        defer { self.isLoadingElevenLabsVoices = false }
+        do {
+            let voices = try await ElevenLabsTTSClient(apiKey: apiKey).listVoices()
+            self.elevenLabsVoices = voices
+            self.elevenLabsVoicesStatus = voices.isEmpty ? "No voices returned." : "\(voices.count) voices loaded."
+        } catch {
+            self.elevenLabsVoices = []
+            self.elevenLabsVoicesStatus = "Could not load voices: \(error.localizedDescription)"
+        }
     }
 
     var gatewayTalkActiveVoiceDetail: String {

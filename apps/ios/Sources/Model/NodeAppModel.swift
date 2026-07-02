@@ -688,6 +688,12 @@ final class NodeAppModel {
         self.talkMode.applyProviderSelectionChanged()
     }
 
+    func setTalkElevenLabsVoiceSelection(_ rawValue: String) {
+        let voice = TalkModeElevenLabsVoiceSelection.resolvedVoiceId(rawValue) ?? ""
+        UserDefaults.standard.set(voice, forKey: TalkModeElevenLabsVoiceSelection.storageKey)
+        self.talkMode.applyProviderSelectionChanged()
+    }
+
     func requestTalkPermissionUpgrade() {
         guard let config = self.activeGatewayConnectConfig else {
             self.talkMode.gatewayTalkPermissionState = .requestFailed("Gateway is not connected")

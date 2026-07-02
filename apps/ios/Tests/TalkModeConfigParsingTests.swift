@@ -120,6 +120,15 @@ import Testing
         #expect(TalkModeRealtimeVoiceSelection.resolvedOverride("unknown") == nil)
     }
 
+    @Test func resolvesElevenLabsVoicePickerOverrides() {
+        #expect(TalkModeElevenLabsVoiceSelection.resolvedVoiceId(nil) == nil)
+        #expect(TalkModeElevenLabsVoiceSelection.resolvedVoiceId("") == nil)
+        #expect(TalkModeElevenLabsVoiceSelection.resolvedVoiceId(" short ") == nil)
+        #expect(TalkModeElevenLabsVoiceSelection.resolvedVoiceId(" NWNKFItRDuolV6H0gABQ ") == "NWNKFItRDuolV6H0gABQ")
+        #expect(TalkModeElevenLabsVoiceSelection.label(
+            for: TalkModeElevenLabsVoiceSelection.defaultVoiceId) == "Neil Barnett")
+    }
+
     @Test func defaultTalkProviderSelectionUsesNativeElevenLabs() {
         #expect(TalkModeProviderSelection.resolved(nil) == .nativeElevenLabs)
         #expect(TalkModeProviderSelection.resolved("") == .nativeElevenLabs)

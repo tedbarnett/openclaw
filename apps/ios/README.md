@@ -18,6 +18,7 @@ Current TedBots configuration:
 - Home surface: TedBots Helm artwork as a soft full-screen background with the real Talk UI embedded on top.
 - Default Talk provider: native ElevenLabs.
 - Default ElevenLabs voice: Neil Barnett (`NWNKFItRDuolV6H0gABQ`).
+- Voice settings can save a local ElevenLabs API key, load the account's available voices, and select any returned voice for native ElevenLabs Talk.
 - Voice aliases: `neil`, `neil barnett`, and `dad`.
 
 Local TedBots build flow:
@@ -25,14 +26,16 @@ Local TedBots build flow:
 ```bash
 pnpm ios:gen
 IOS_DEST='platform=iOS,id=00008150-0001784802F0401C' pnpm ios:build
-xcrun devicectl device install app --device 00008150-0001784802F0401C apps/ios/build/Build/Products/Debug-iphoneos/OpenClaw.app
-xcrun devicectl device process launch --device 00008150-0001784802F0401C ai.gabrielbarnett.tedbots
+APP_PATH=$(ls -td ~/Library/Developer/Xcode/DerivedData/OpenClaw-*/Build/Products/Debug-iphoneos/OpenClaw.app | head -1)
+xcrun devicectl device install app --device 600148C4-4E79-5373-B0CE-E54D8DBE2244 "$APP_PATH"
+xcrun devicectl device process launch --device 600148C4-4E79-5373-B0CE-E54D8DBE2244 ai.gabrielbarnett.tedbots
 ```
 
 Notes:
 
 - Debug device builds strip Push/App Group entitlements so the existing wildcard development profile can install on Ted's iPhone. Release/App Store paths still need proper profiles and capabilities.
 - WebRTC is resolved through the local wrapper package in `apps/ios/Vendor/WebRTC` after running the checksum-verified download script, avoiding the SwiftPM remote binary package hang.
+- The ElevenLabs API key for local voice listing is stored in the app Keychain by provider, not in git or generated config.
 - The unrelated `apps/swabble/Package.resolved` drift is intentionally not part of TedBots commits.
 
 ## Distribution Status

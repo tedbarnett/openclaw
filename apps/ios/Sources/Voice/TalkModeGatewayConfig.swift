@@ -168,8 +168,8 @@ enum TalkVoiceModeDescriptorBuilder {
     }
 
     private static func voiceLabel(_ voice: String) -> String {
-        if voice == "NWNKFItRDuolV6H0gABQ" {
-            return "Neil Barnett"
+        if voice == TalkModeElevenLabsVoiceSelection.defaultVoiceId {
+            return TalkModeElevenLabsVoiceSelection.defaultVoiceName
         }
         return TalkModeRealtimeVoiceSelection.voices.contains(voice)
             ? TalkModeRealtimeVoiceSelection.label(for: voice)
@@ -321,6 +321,32 @@ enum TalkModeRealtimeVoiceSelection {
 
     static func label(for voice: String) -> String {
         voice.prefix(1).uppercased() + String(voice.dropFirst())
+    }
+}
+
+enum TalkModeElevenLabsVoiceSelection {
+    static let storageKey = "talk.elevenlabs.voiceSelection"
+    static let defaultVoiceId = "NWNKFItRDuolV6H0gABQ"
+    static let defaultVoiceName = "Neil Barnett"
+
+    static func resolvedVoiceId(_ raw: String?) -> String? {
+        let trimmed = (raw ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, trimmed.count >= 10 else { return nil }
+        return trimmed.allSatisfy { $0.isLetter || $0.isNumber || $0 == "-" || $0 == "_" }
+            ? trimmed
+            : nil
+    }
+
+    static func label(for voiceId: String, voices: [ElevenLabsVoice] = []) -> String {
+        let trimmed = voiceId.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed == Self.defaultVoiceId { return Self.defaultVoiceName }
+        if let voice = voices.first(where: { $0.voiceId == trimmed }),
+           let name = voice.name?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !name.isEmpty
+        {
+            return name
+        }
+        return trimmed
     }
 }
 

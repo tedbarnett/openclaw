@@ -111,7 +111,7 @@ struct TalkProTab: View {
                 CommandControlBackground()
             }
             ScrollView {
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: self.presentation == .home ? 12 : 10) {
                     self.header
                     if let fallbackIssue = self.fallbackIssue {
                         TalkRuntimeIssueBanner(
@@ -123,11 +123,13 @@ struct TalkProTab: View {
                             .padding(.horizontal, OpenClawProMetric.pagePadding)
                     }
                     self.voiceHeroCard
-                    self.conversationCard
+                    if self.presentation == .standard {
+                        self.conversationCard
+                    }
                     self.voiceModeCard
                     self.controlsCard
                 }
-                .padding(.top, 16)
+                .padding(.top, self.presentation == .home ? 12 : 16)
                 .padding(.bottom, 18)
             }
         }
@@ -135,14 +137,14 @@ struct TalkProTab: View {
     }
 
     private var header: some View {
-        HStack(alignment: .center, spacing: 11) {
+        HStack(alignment: .center, spacing: self.presentation == .home ? 9 : 11) {
             if let headerLeadingAction {
                 OpenClawSidebarHeaderLeadingSlot(action: headerLeadingAction)
             }
-            OpenClawProMark(size: 31, shadowRadius: 9)
+            OpenClawProMark(size: self.presentation == .home ? 27 : 31, shadowRadius: 9)
             VStack(alignment: .leading, spacing: 2) {
                 Text(self.presentation.title)
-                    .font(.system(size: 27, weight: .bold, design: .rounded))
+                    .font(.system(size: self.presentation == .home ? 24 : 27, weight: .bold, design: .rounded))
                 Text(self.presentation.subtitle ?? self.headerSubtitle)
                     .font(.caption.weight(.medium))
                     .foregroundStyle(.secondary)
@@ -176,23 +178,25 @@ struct TalkProTab: View {
     }
 
     private var voiceHeroCard: some View {
-        CommandPanel(tint: self.state.color, isProminent: true, padding: 16) {
-            VStack(alignment: .center, spacing: 16) {
+        CommandPanel(tint: self.state.color, isProminent: true, padding: self.presentation == .home ? 18 : 16) {
+            VStack(alignment: .center, spacing: self.presentation == .home ? 18 : 16) {
                 TalkProOrb(
                     mode: self.state.waveformMode(micLevel: self.appModel.talkMode.micLevel),
                     color: self.state.color,
                     systemImage: self.state.icon)
-                    .frame(height: 188)
+                    .frame(height: self.presentation == .home ? 138 : 188)
                     .accessibilityHidden(true)
 
                 VStack(spacing: 5) {
                     Text(self.state.title)
-                        .font(.title3.weight(.bold))
+                        .font((self.presentation == .home ? Font.title2 : Font.title3).weight(.bold))
                         .multilineTextAlignment(.center)
                     Text(self.heroSubtitle)
-                        .font(.subheadline.weight(.medium))
+                        .font((self.presentation == .home ? Font.callout : Font.subheadline).weight(.medium))
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
+                        .lineLimit(self.presentation == .home ? 3 : nil)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
                 Button(action: self.handlePrimaryAction) {
@@ -200,7 +204,7 @@ struct TalkProTab: View {
                         .font(.subheadline.weight(.bold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 50)
+                        .frame(height: self.presentation == .home ? 54 : 50)
                         .background {
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
                                 .fill(self.state.primaryButtonFill)
@@ -357,8 +361,8 @@ struct TalkProTab: View {
                     .foregroundStyle(.secondary)
                 Text(value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "—" : value)
                     .font(.subheadline.weight(.semibold))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.78)
+                    .lineLimit(self.presentation == .home ? 2 : 1)
+                    .minimumScaleFactor(self.presentation == .home ? 0.90 : 0.78)
             }
             Spacer(minLength: 0)
         }
@@ -519,15 +523,15 @@ private struct HelmHomeBackground: View {
                 .resizable()
                 .scaledToFill()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .opacity(self.colorScheme == .dark ? 0.24 : 0.18)
-                .blur(radius: 1.5)
+                .opacity(self.colorScheme == .dark ? 0.18 : 0.10)
+                .blur(radius: 2.5)
                 .saturation(1.08)
                 .accessibilityHidden(true)
             LinearGradient(
                 colors: [
-                    Color(uiColor: .systemBackground).opacity(self.colorScheme == .dark ? 0.70 : 0.42),
-                    Color(uiColor: .systemGroupedBackground).opacity(self.colorScheme == .dark ? 0.58 : 0.54),
-                    Color(uiColor: .systemBackground).opacity(self.colorScheme == .dark ? 0.82 : 0.68),
+                    Color(uiColor: .systemBackground).opacity(self.colorScheme == .dark ? 0.82 : 0.70),
+                    Color(uiColor: .systemGroupedBackground).opacity(self.colorScheme == .dark ? 0.76 : 0.74),
+                    Color(uiColor: .systemBackground).opacity(self.colorScheme == .dark ? 0.90 : 0.82),
                 ],
                 startPoint: .top,
                 endPoint: .bottom)

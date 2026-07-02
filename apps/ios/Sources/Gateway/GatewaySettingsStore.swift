@@ -206,6 +206,17 @@ enum GatewaySettingsStore {
         return nil
     }
 
+    static func saveTalkProviderApiKey(_ apiKey: String, provider: String) {
+        guard let providerId = self.normalizedTalkProviderID(provider) else { return }
+        let trimmed = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        let account = self.talkProviderApiKeyAccount(providerId: providerId)
+        if trimmed.isEmpty {
+            _ = KeychainStore.delete(service: self.talkService, account: account)
+            return
+        }
+        _ = KeychainStore.saveString(trimmed, service: self.talkService, account: account)
+    }
+
     static func saveLastGatewayConnectionManual(host: String, port: Int, useTLS: Bool, stableID: String) {
         let payload = LastGatewayConnectionData(
             kind: .manual, stableID: stableID, useTLS: useTLS, host: host, port: port)

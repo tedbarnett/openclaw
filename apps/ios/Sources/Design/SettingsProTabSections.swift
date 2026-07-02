@@ -461,6 +461,9 @@ extension SettingsProTab {
             self.talkVoiceSettingsCard
             self.shareSettingsCard
         }
+        .onAppear {
+            self.loadTalkElevenLabsAPIKeyDraftIfNeeded()
+        }
     }
 
     var diagnosticsDestination: some View {
@@ -913,9 +916,62 @@ extension SettingsProTab {
                             }
                         }
                     }
+                    if self.shouldShowElevenLabsVoicePicker {
+                        Picker("ElevenLabs Voice", selection: self.talkElevenLabsVoiceSelectionBinding) {
+                            Text("Neil Barnett").tag("")
+                            ForEach(self.elevenLabsVoices, id: \.voiceId) { voice in
+                                Text(TalkModeElevenLabsVoiceSelection.label(
+                                    for: voice.voiceId,
+                                    voices: self.elevenLabsVoices))
+                                    .tag(voice.voiceId)
+                            }
+                            if let selected = TalkModeElevenLabsVoiceSelection.resolvedVoiceId(
+                                self.talkElevenLabsVoiceSelectionRaw),
+                                selected != TalkModeElevenLabsVoiceSelection.defaultVoiceId,
+                                !self.elevenLabsVoices.contains(where: { $0.voiceId == selected })
+                            {
+                                Text(selected).tag(selected)
+                            }
+                        }
+                        VStack(alignment: .leading, spacing: 8) {
+                            SecureField("ElevenLabs API Key", text: self.$talkElevenLabsAPIKeyDraft)
+                                .textFieldStyle(.roundedBorder)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                            HStack(spacing: 8) {
+                                Button {
+                                    self.saveTalkElevenLabsAPIKey()
+                                } label: {
+                                    Label("Save Key", systemImage: "key.fill")
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+                                Button {
+                                    Task { await self.loadElevenLabsVoices() }
+                                } label: {
+                                    Label(
+                                        self.isLoadingElevenLabsVoices ? "Loading" : "Load Voices",
+                                        systemImage: self.isLoadingElevenLabsVoices ? "hourglass" : "arrow.clockwise")
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+                                .disabled(self.isLoadingElevenLabsVoices)
+                            }
+                            if !self.elevenLabsVoicesStatus.isEmpty {
+                                Text(self.elevenLabsVoicesStatus)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                    }
                     self.detailRow("Voice Mode", value: self.appModel.talkMode.gatewayTalkVoiceModeTitle)
                     Divider()
-                    self.detailRow("Active Voice", value: self.gatewayTalkActiveVoiceDetail)
+                    self.detailRow(
+                        "Active Voice",
+                        value: self.shouldShowElevenLabsVoicePicker
+                            ? self.selectedElevenLabsVoiceLabel
+                            : self.gatewayTalkActiveVoiceDetail)
                     if let issue = self.gatewayTalkLastIssueDetail {
                         Divider()
                         self.detailRow("Last Voice Issue", value: issue)

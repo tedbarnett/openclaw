@@ -9,6 +9,7 @@ private struct KeychainEntry: Hashable {
 
 private let gatewayService = "ai.openclawfoundation.app.gateway"
 private let nodeService = "ai.openclawfoundation.app.node"
+private let talkService = "ai.openclawfoundation.app.talk"
 private let instanceIdEntry = KeychainEntry(service: nodeService, account: "instanceId")
 private let preferredGatewayEntry = KeychainEntry(service: gatewayService, account: "preferredStableID")
 private let lastGatewayEntry = KeychainEntry(service: gatewayService, account: "lastDiscoveredStableID")
@@ -26,6 +27,7 @@ private let lastGatewayDefaultsKeys = [
     "gateway.last.stableID",
 ]
 private let lastGatewayKeychainEntry = KeychainEntry(service: gatewayService, account: "lastConnection")
+private let elevenLabsApiKeyEntry = KeychainEntry(service: talkService, account: "provider.apiKey.elevenlabs")
 
 private func snapshotDefaults(_ keys: [String]) -> [String: Any?] {
     let defaults = UserDefaults.standard
@@ -184,5 +186,18 @@ private func withLastGatewaySnapshot(_ body: () -> Void) {
             #expect(defaults.object(forKey: "gateway.last.stableID") == nil)
             #expect(defaults.object(forKey: "gateway.last.host") == nil)
         }
+    }
+
+    @Test func talkProviderApiKey_roundTripsAndClears() {
+        let snapshot = snapshotKeychain([elevenLabsApiKeyEntry])
+        defer { restoreKeychain(snapshot) }
+
+        applyKeychain([elevenLabsApiKeyEntry: nil])
+
+        GatewaySettingsStore.saveTalkProviderApiKey("  test-key  ", provider: "ElevenLabs")
+        #expect(GatewaySettingsStore.loadTalkProviderApiKey(provider: "elevenlabs") == "test-key")
+
+        GatewaySettingsStore.saveTalkProviderApiKey("  ", provider: "elevenlabs")
+        #expect(GatewaySettingsStore.loadTalkProviderApiKey(provider: "elevenlabs") == nil)
     }
 }

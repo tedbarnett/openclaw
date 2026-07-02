@@ -17,6 +17,7 @@ struct SettingsProTab: View {
     @AppStorage(TalkModeProviderSelection.storageKey) var talkProviderSelectionRaw: String =
         TalkModeProviderSelection.defaultSelection.rawValue
     @AppStorage(TalkModeRealtimeVoiceSelection.storageKey) var talkRealtimeVoiceSelectionRaw: String = ""
+    @AppStorage(TalkModeElevenLabsVoiceSelection.storageKey) var talkElevenLabsVoiceSelectionRaw: String = ""
     @AppStorage(TalkSpeechLocale.storageKey) var talkSpeechLocale: String = TalkSpeechLocale.automaticID
     @AppStorage("talk.button.enabled") var talkButtonEnabled: Bool = true
     @AppStorage("talk.background.enabled") var talkBackgroundEnabled: Bool = false
@@ -59,6 +60,11 @@ struct SettingsProTab: View {
     @State var diagnosticsLastRunText = "Not run"
     @State var diagnosticsIssueCount: Int?
     @State var showTalkIssueDetails = false
+    @State var talkElevenLabsAPIKeyDraft = ""
+    @State var didLoadTalkElevenLabsAPIKeyDraft = false
+    @State var elevenLabsVoices: [ElevenLabsVoice] = []
+    @State var isLoadingElevenLabsVoices = false
+    @State var elevenLabsVoicesStatus = ""
     @State private var navigationPath: [SettingsRoute] = []
     let initialRoute: SettingsRoute?
     let directRoute: SettingsRoute?
