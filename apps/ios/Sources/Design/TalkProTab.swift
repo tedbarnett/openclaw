@@ -1,3 +1,4 @@
+import OpenClawKit
 import SwiftUI
 
 enum TalkProPresentation: Equatable {
@@ -23,11 +24,16 @@ struct TalkProTab: View {
     @Environment(NodeAppModel.self) private var appModel
     @AppStorage("talk.enabled") private var talkEnabled: Bool = false
     @AppStorage(TalkSpeechLocale.storageKey) private var talkSpeechLocale: String = TalkSpeechLocale.automaticID
+    @AppStorage(TalkModeElevenLabsVoiceSelection.storageKey) private var talkElevenLabsVoiceSelectionRaw: String = ""
     @AppStorage(TalkDefaults.speakerphoneEnabledKey) private var talkSpeakerphoneEnabled: Bool =
         TalkDefaults.speakerphoneEnabledByDefault
     @AppStorage("talk.background.enabled") private var talkBackgroundEnabled: Bool = false
     @State private var showPermissionPrompt = false
     @State private var showTalkIssueDetails = false
+    @State private var homeElevenLabsVoices: [ElevenLabsVoice] = []
+    @State private var homeElevenLabsVoiceStatus = ""
+    @State private var homeElevenLabsHasAPIKey = false
+    @State private var isLoadingHomeElevenLabsVoices = false
     let presentation: TalkProPresentation
     let headerLeadingAction: OpenClawSidebarHeaderAction?
     let ownsNavigationStack: Bool
@@ -123,17 +129,22 @@ struct TalkProTab: View {
                             .padding(.horizontal, OpenClawProMetric.pagePadding)
                     }
                     self.voiceHeroCard
-                    if self.presentation == .standard {
+                    if self.presentation == .home {
+                        self.homeVoicePickerCard
+                    } else {
                         self.conversationCard
+                        self.voiceModeCard
+                        self.controlsCard
                     }
-                    self.voiceModeCard
-                    self.controlsCard
                 }
                 .padding(.top, self.presentation == .home ? 12 : 16)
                 .padding(.bottom, 18)
             }
         }
         .navigationBarHidden(true)
+        .onAppear {
+            self.loadHomeElevenLabsVoicesIfNeeded()
+        }
     }
 
     private var header: some View {
@@ -236,6 +247,90 @@ struct TalkProTab: View {
             }
         }
         .padding(.horizontal, OpenClawProMetric.pagePadding)
+    }
+
+    private var homeVoicePickerCard: some View {
+        CommandPanel(padding: 0) {
+            VStack(spacing: 0) {
+                self.cardHeader(
+                    title: "Character Voice",
+                    value: self.isLoadingHomeElevenLabsVoices ? "Loading" : nil,
+                    color: OpenClawBrand.accent)
+                    .padding(.horizontal, 12)
+                    .padding(.top, 11)
+                    .padding(.bottom, 3)
+                HStack(spacing: 10) {
+                    Image(systemName: "person.wave.2.fill")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(self.state.color)
+                        .frame(width: 30, height: 30)
+                        .background {
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .fill(self.state.color.opacity(0.11))
+                        }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Selected")
+                            .font(.caption2.weight(.medium))
+                            .foregroundStyle(.secondary)
+                        Text(self.homeSelectedElevenLabsVoiceLabel)
+                            .font(.subheadline.weight(.semibold))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.82)
+                    }
+                    Spacer(minLength: 8)
+                    self.homeVoiceMenu
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                if !self.homeElevenLabsVoiceStatus.isEmpty {
+                    Divider().padding(.leading, 54)
+                    Text(self.homeElevenLabsVoiceStatus)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 9)
+                }
+            }
+        }
+        .padding(.horizontal, OpenClawProMetric.pagePadding)
+    }
+
+    private var homeVoiceMenu: some View {
+        Menu {
+            Button(TalkModeElevenLabsVoiceSelection.defaultVoiceName) {
+                self.selectHomeElevenLabsVoice("")
+            }
+            if !self.homeElevenLabsVoices.isEmpty {
+                Divider()
+                ForEach(self.homeElevenLabsVoices, id: \.voiceId) { voice in
+                    Button(TalkModeElevenLabsVoiceSelection.label(
+                        for: voice.voiceId,
+                        voices: self.homeElevenLabsVoices))
+                    {
+                        self.selectHomeElevenLabsVoice(voice.voiceId)
+                    }
+                }
+            }
+            Divider()
+            Button(self.isLoadingHomeElevenLabsVoices ? "Loading Voices" : "Reload Voices") {
+                Task { await self.loadHomeElevenLabsVoices() }
+            }
+            .disabled(self.isLoadingHomeElevenLabsVoices || !self.homeElevenLabsHasAPIKey)
+            Button("Voice Settings") {
+                self.openVoiceSettings()
+            }
+        } label: {
+            Label("Choose", systemImage: "chevron.up.chevron.down")
+                .font(.caption.weight(.bold))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background {
+                    Capsule(style: .continuous)
+                        .fill(OpenClawBrand.accent.opacity(0.12))
+                }
+        }
+        .disabled(self.isLoadingHomeElevenLabsVoices && self.homeElevenLabsVoices.isEmpty)
     }
 
     private var voiceModeCard: some View {
@@ -435,6 +530,56 @@ struct TalkProTab: View {
     private var speechLocaleText: String {
         if self.talkSpeechLocale == TalkSpeechLocale.automaticID { return "Automatic" }
         return self.talkSpeechLocale
+    }
+
+    private var homeSelectedElevenLabsVoiceLabel: String {
+        let voiceId = TalkModeElevenLabsVoiceSelection.resolvedVoiceId(self.talkElevenLabsVoiceSelectionRaw)
+            ?? TalkModeElevenLabsVoiceSelection.defaultVoiceId
+        return TalkModeElevenLabsVoiceSelection.label(for: voiceId, voices: self.homeElevenLabsVoices)
+    }
+
+    private func selectHomeElevenLabsVoice(_ rawValue: String) {
+        let voice = TalkModeElevenLabsVoiceSelection.resolvedVoiceId(rawValue) ?? ""
+        self.talkElevenLabsVoiceSelectionRaw = voice
+        self.appModel.setTalkElevenLabsVoiceSelection(voice)
+    }
+
+    private func loadHomeElevenLabsVoicesIfNeeded() {
+        guard self.presentation == .home else { return }
+        self.homeElevenLabsHasAPIKey = (GatewaySettingsStore.loadTalkProviderApiKey(provider: "elevenlabs") ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .isEmpty == false
+        guard self.homeElevenLabsHasAPIKey, self.homeElevenLabsVoices.isEmpty else {
+            if !self.homeElevenLabsHasAPIKey {
+                self.homeElevenLabsVoiceStatus = "Add an ElevenLabs API key in Voice Settings to load your voices."
+            }
+            return
+        }
+        Task { await self.loadHomeElevenLabsVoices() }
+    }
+
+    @MainActor
+    private func loadHomeElevenLabsVoices() async {
+        guard self.presentation == .home else { return }
+        let apiKey = (GatewaySettingsStore.loadTalkProviderApiKey(provider: "elevenlabs") ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        self.homeElevenLabsHasAPIKey = !apiKey.isEmpty
+        guard !apiKey.isEmpty else {
+            self.homeElevenLabsVoices = []
+            self.homeElevenLabsVoiceStatus = "Add an ElevenLabs API key in Voice Settings to load your voices."
+            return
+        }
+        self.isLoadingHomeElevenLabsVoices = true
+        self.homeElevenLabsVoiceStatus = "Loading voices..."
+        defer { self.isLoadingHomeElevenLabsVoices = false }
+        do {
+            let voices = try await ElevenLabsTTSClient(apiKey: apiKey).listVoices()
+            self.homeElevenLabsVoices = voices
+            self.homeElevenLabsVoiceStatus = voices.isEmpty ? "No ElevenLabs voices found." : ""
+        } catch {
+            self.homeElevenLabsVoices = []
+            self.homeElevenLabsVoiceStatus = "Could not load voices. Open Voice Settings to check the key."
+        }
     }
 
     private func alignPersistedTalkState() {

@@ -34,7 +34,7 @@ This branch carries Ted Barnett's custom iOS build, **TedBots**. It keeps the up
 - Bundle ID base: `ai.gabrielbarnett.tedbots`
 - URL scheme: `tedbots://`
 - Signing team: `63K8J7P389`
-- Default Home tab embeds a compact Talk UI over the TedBots Helm artwork.
+- Default Home tab embeds a compact Talk UI and character voice menu over the TedBots Helm artwork.
 - Default Talk provider is ElevenLabs with the Neil Barnett voice (`NWNKFItRDuolV6H0gABQ`), and Voice settings can load/select any saved ElevenLabs account voice.
 
 For build details and local deploy commands, see [`apps/ios/README.md`](apps/ios/README.md).

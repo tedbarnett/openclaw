@@ -15,10 +15,10 @@ Current TedBots configuration:
 - Signing mode: automatic Apple Development for local Debug device builds.
 - Icon/background artwork: TedBots Helm artwork stored in the app icon and `OpenClawIcon` asset sets.
 - Default first tab: `Home`.
-- Home surface: TedBots Helm artwork as a soft full-screen background with the real Talk UI embedded on top.
+- Home surface: TedBots Helm artwork as a soft full-screen background with a simplified Talk control and character voice menu.
 - Default Talk provider: native ElevenLabs.
 - Default ElevenLabs voice: Neil Barnett (`NWNKFItRDuolV6H0gABQ`).
-- Voice settings can save a local ElevenLabs API key, load the account's available voices, and select any returned voice for native ElevenLabs Talk.
+- Voice settings can save a local ElevenLabs API key, load the account's available voices, and select any returned voice for native ElevenLabs Talk. Home also exposes a `Choose` voice menu once the key is saved.
 - Voice aliases: `neil`, `neil barnett`, and `dad`.
 
 Local TedBots build flow:
