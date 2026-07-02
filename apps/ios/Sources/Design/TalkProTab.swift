@@ -566,6 +566,11 @@ struct TalkProTab: View {
         }
         let subtitle = (self.appModel.talkMode.gatewayTalkVoiceModeSubtitle ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
+        if self.presentation == .home,
+           self.appModel.talkMode.gatewayTalkVoiceModeTitle == TalkModeProviderSelection.nativeElevenLabs.label
+        {
+            return "\(TalkModeProviderSelection.nativeElevenLabs.label) • \(self.homeSelectedElevenLabsVoiceLabel)"
+        }
         if !subtitle.isEmpty { return subtitle }
         return "Routes voice to \(self.appModel.chatAgentName)."
     }
