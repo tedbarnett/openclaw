@@ -14,6 +14,7 @@ extension RootTabs {
     static let sidebarHideButtonAccessibilityIdentifier = "RootTabs.Sidebar.Hide"
 
     enum AppTab: Hashable {
+        case home
         case control
         case chat
         case talk
@@ -22,6 +23,7 @@ extension RootTabs {
     }
 
     enum SidebarDestination: String, CaseIterable, Hashable, Identifiable {
+        case home
         case chat
         case talk
         case overview
@@ -44,6 +46,7 @@ extension RootTabs {
 
         var title: String {
             switch self {
+            case .home: "Home"
             case .chat: "Chat"
             case .talk: "Talk"
             case .overview: "Overview"
@@ -71,6 +74,7 @@ extension RootTabs {
 
         var subtitle: String {
             switch self {
+            case .home: "Helm home and voice entry point."
             case .chat: "Agent chat and recent work."
             case .talk: "Realtime voice and fallback controls."
             case .overview: "Status, entry points, health."
@@ -91,6 +95,7 @@ extension RootTabs {
 
         var systemImage: String {
             switch self {
+            case .home: "house"
             case .chat: "bubble.left"
             case .talk: "waveform.circle"
             case .overview: "chart.bar"
@@ -111,6 +116,8 @@ extension RootTabs {
 
         var appTab: AppTab {
             switch self {
+            case .home:
+                .home
             case .chat:
                 .chat
             case .talk:
@@ -130,7 +137,7 @@ extension RootTabs {
             switch self {
             case .gateway:
                 .gateway
-            case .chat, .talk, .overview, .activity, .agents, .workboard, .skillWorkshop, .instances, .sessions,
+            case .home, .chat, .talk, .overview, .activity, .agents, .workboard, .skillWorkshop, .instances, .sessions,
                  .dreaming,
                  .usage, .cron, .settings, .docs:
                 nil
@@ -199,7 +206,7 @@ extension RootTabs {
 
     static func shouldOpenRootTabFromPhoneHub(_ destination: SidebarDestination) -> Bool {
         switch destination {
-        case .chat, .talk, .agents, .gateway, .settings:
+        case .home, .chat, .talk, .agents, .gateway, .settings:
             true
         case .overview, .activity, .workboard, .skillWorkshop, .instances, .sessions, .dreaming,
              .usage,
@@ -210,6 +217,8 @@ extension RootTabs {
 
     static func defaultSidebarDestination(for tab: AppTab) -> SidebarDestination {
         switch tab {
+        case .home:
+            .home
         case .control:
             .overview
         case .chat:
@@ -274,7 +283,7 @@ extension RootTabs {
     }
 
     static let sidebarGroups: [SidebarGroup] = [
-        SidebarGroup(title: "CHAT", destinations: [.chat, .talk]),
+        SidebarGroup(title: "CHAT", destinations: [.home, .chat, .talk]),
         SidebarGroup(
             title: "CONTROL",
             destinations: [

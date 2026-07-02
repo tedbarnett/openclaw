@@ -179,7 +179,7 @@ struct RootTabsPhoneControlHub: View {
     @ViewBuilder
     private func detail(for destination: RootTabs.SidebarDestination) -> some View {
         switch destination {
-        case .chat, .talk, .agents, .gateway:
+        case .home, .chat, .talk, .agents, .gateway:
             EmptyView()
         case .overview:
             CommandCenterTab(

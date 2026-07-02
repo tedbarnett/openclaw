@@ -1,5 +1,24 @@
 import SwiftUI
 
+enum TalkProPresentation: Equatable {
+    case standard
+    case home
+
+    var title: String {
+        switch self {
+        case .standard: "Talk"
+        case .home: "TedBots"
+        }
+    }
+
+    var subtitle: String? {
+        switch self {
+        case .standard: nil
+        case .home: "Talk with Helm"
+        }
+    }
+}
+
 struct TalkProTab: View {
     @Environment(NodeAppModel.self) private var appModel
     @AppStorage("talk.enabled") private var talkEnabled: Bool = false
@@ -9,17 +28,20 @@ struct TalkProTab: View {
     @AppStorage("talk.background.enabled") private var talkBackgroundEnabled: Bool = false
     @State private var showPermissionPrompt = false
     @State private var showTalkIssueDetails = false
+    let presentation: TalkProPresentation
     let headerLeadingAction: OpenClawSidebarHeaderAction?
     let ownsNavigationStack: Bool
     var openSettings: () -> Void
     var openVoiceSettings: () -> Void
 
     init(
+        presentation: TalkProPresentation = .standard,
         headerLeadingAction: OpenClawSidebarHeaderAction? = nil,
         ownsNavigationStack: Bool = true,
         openSettings: @escaping () -> Void,
         openVoiceSettings: (() -> Void)? = nil)
     {
+        self.presentation = presentation
         self.headerLeadingAction = headerLeadingAction
         self.ownsNavigationStack = ownsNavigationStack
         self.openSettings = openSettings
@@ -83,7 +105,11 @@ struct TalkProTab: View {
 
     private var content: some View {
         ZStack {
-            CommandControlBackground()
+            if self.presentation == .home {
+                HelmHomeBackground()
+            } else {
+                CommandControlBackground()
+            }
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
                     self.header
@@ -115,9 +141,9 @@ struct TalkProTab: View {
             }
             OpenClawProMark(size: 31, shadowRadius: 9)
             VStack(alignment: .leading, spacing: 2) {
-                Text("Talk")
+                Text(self.presentation.title)
                     .font(.system(size: 27, weight: .bold, design: .rounded))
-                Text(self.headerSubtitle)
+                Text(self.presentation.subtitle ?? self.headerSubtitle)
                     .font(.caption.weight(.medium))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -481,6 +507,33 @@ enum TalkProWaveformMode: Equatable {
     case speaking
     case indeterminate
     case still
+}
+
+private struct HelmHomeBackground: View {
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        ZStack {
+            CommandControlBackground()
+            Image("OpenClawIcon")
+                .resizable()
+                .scaledToFill()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .opacity(self.colorScheme == .dark ? 0.24 : 0.18)
+                .blur(radius: 1.5)
+                .saturation(1.08)
+                .accessibilityHidden(true)
+            LinearGradient(
+                colors: [
+                    Color(uiColor: .systemBackground).opacity(self.colorScheme == .dark ? 0.70 : 0.42),
+                    Color(uiColor: .systemGroupedBackground).opacity(self.colorScheme == .dark ? 0.58 : 0.54),
+                    Color(uiColor: .systemBackground).opacity(self.colorScheme == .dark ? 0.82 : 0.68),
+                ],
+                startPoint: .top,
+                endPoint: .bottom)
+        }
+        .ignoresSafeArea()
+    }
 }
 
 struct TalkProState: Equatable {

@@ -120,7 +120,7 @@ struct RootTabsSourceGuardTests {
         #expect(source.contains("if self.isSidebarDrawerLayout {"))
         #expect(!source.contains("private var sidebarFooter: some View"))
         #expect(!source.contains("LabeledContent(\"Version\""))
-        #expect(navigationSource.contains("SidebarGroup(title: \"CHAT\", destinations: [.chat, .talk])"))
+        #expect(navigationSource.contains("SidebarGroup(title: \"CHAT\", destinations: [.home, .chat, .talk])"))
         #expect(!navigationSource.contains("title: \"AGENT\""))
         #expect(navigationSource.contains("case settings"))
         #expect(!navigationSource.contains("case settingsChannels"))

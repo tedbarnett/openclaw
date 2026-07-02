@@ -67,7 +67,7 @@ import UIKit
         let destinationIDs = RootTabs.SidebarDestination.allCases.map(\.rawValue)
 
         #expect(groups.map(\.title) == ["CHAT", "CONTROL", "SETTINGS", "REFERENCE"])
-        #expect(groups[0].destinations.map(\.rawValue) == ["chat", "talk"])
+        #expect(groups[0].destinations.map(\.rawValue) == ["home", "chat", "talk"])
         #expect(groups[1].destinations == [
             .overview,
             .activity,
@@ -83,6 +83,7 @@ import UIKit
         #expect(groups[2].destinations == [.settings])
         #expect(groups[3].destinations == [.docs])
         #expect(destinationIDs == [
+            "home",
             "chat",
             "talk",
             "overview",
@@ -121,6 +122,7 @@ import UIKit
     }
 
     @Test func phoneHubUsesRootTabsOnlyForNativeChatAgentAndGateway() {
+        #expect(RootTabs.shouldOpenRootTabFromPhoneHub(.home))
         #expect(RootTabs.shouldOpenRootTabFromPhoneHub(.chat))
         #expect(RootTabs.shouldOpenRootTabFromPhoneHub(.talk))
         #expect(RootTabs.shouldOpenRootTabFromPhoneHub(.agents))
@@ -128,17 +130,17 @@ import UIKit
         #expect(RootTabs.shouldOpenRootTabFromPhoneHub(.settings))
 
         for destination in RootTabs.SidebarDestination.allCases
-            where destination != .chat && destination != .talk && destination != .agents && destination != .gateway &&
-            destination != .settings
+            where destination != .home && destination != .chat && destination != .talk && destination != .agents &&
+            destination != .gateway && destination != .settings
         {
             #expect(!RootTabs.shouldOpenRootTabFromPhoneHub(destination))
         }
     }
 
-    @Test func appLaunchDefaultsToChatTab() {
-        #expect(RootTabs.initialTab(arguments: ["OpenClaw"]) == .chat)
-        #expect(RootTabs.initialTab(arguments: ["OpenClaw", "--openclaw-initial-tab"]) == .chat)
-        #expect(RootTabs.initialTab(arguments: ["OpenClaw", "--openclaw-initial-tab", "unknown"]) == .chat)
+    @Test func appLaunchDefaultsToHomeTab() {
+        #expect(RootTabs.initialTab(arguments: ["OpenClaw"]) == .home)
+        #expect(RootTabs.initialTab(arguments: ["OpenClaw", "--openclaw-initial-tab"]) == .home)
+        #expect(RootTabs.initialTab(arguments: ["OpenClaw", "--openclaw-initial-tab", "unknown"]) == .home)
     }
 
     @Test func appLaunchUsesRequestedDestinationBeforeChatFallback() {
@@ -159,6 +161,7 @@ import UIKit
     @Test func appLaunchRespectsExplicitInitialTabOverride() {
         #expect(RootTabs.initialTab(arguments: ["OpenClaw", "--openclaw-initial-tab", "control"]) == .control)
         #expect(RootTabs.initialTab(arguments: ["OpenClaw", "--openclaw-initial-tab", "overview"]) == .control)
+        #expect(RootTabs.initialTab(arguments: ["OpenClaw", "--openclaw-initial-tab", "home"]) == .home)
         #expect(RootTabs.initialTab(arguments: ["OpenClaw", "--openclaw-initial-tab", "chat"]) == .chat)
         #expect(RootTabs.initialTab(arguments: ["OpenClaw", "--openclaw-initial-tab", "voice"]) == .talk)
         #expect(RootTabs.initialTab(arguments: ["OpenClaw", "--openclaw-initial-tab", "agents"]) == .agent)
@@ -166,6 +169,7 @@ import UIKit
     }
 
     @Test func legacyInitialTabsMapToMatchingSidebarDestinations() {
+        #expect(RootTabs.defaultSidebarDestination(for: .home) == .home)
         #expect(RootTabs.defaultSidebarDestination(for: .control) == .overview)
         #expect(RootTabs.defaultSidebarDestination(for: .chat) == .chat)
         #expect(RootTabs.defaultSidebarDestination(for: .talk) == .talk)

@@ -60,6 +60,8 @@ struct RootTabs: View {
         }
 
         switch arguments[valueIndex].lowercased() {
+        case "home":
+            return .home
         case "control", "overview":
             return .control
         case "chat":
@@ -76,7 +78,7 @@ struct RootTabs: View {
     }
 
     private static func fallbackInitialTab(arguments: [String]) -> AppTab {
-        self.requestedInitialSidebarDestination(arguments: arguments)?.appTab ?? .chat
+        self.requestedInitialSidebarDestination(arguments: arguments)?.appTab ?? .home
     }
 
     private static var initialSidebarDestination: SidebarDestination {
@@ -151,6 +153,13 @@ struct RootTabs: View {
 
     private var phoneTabContent: some View {
         TabView(selection: self.$selectedTab) {
+            TalkProTab(
+                presentation: .home,
+                openSettings: { self.selectSidebarDestination(.gateway) },
+                openVoiceSettings: { self.selectSettingsRoute(.voice) })
+                .tabItem { Label("Home", systemImage: "house.fill") }
+                .tag(AppTab.home)
+
             ChatProTab(openSettings: { self.selectSidebarDestination(.gateway) })
                 .tabItem { Label("Chat", systemImage: "bubble.left.fill") }
                 .tag(AppTab.chat)
@@ -398,6 +407,13 @@ struct RootTabs: View {
     @ViewBuilder
     private var sidebarDetail: some View {
         switch self.selectedSidebarDestination {
+        case .home:
+            TalkProTab(
+                presentation: .home,
+                headerLeadingAction: self.sidebarHeaderLeadingAction,
+                ownsNavigationStack: false,
+                openSettings: { self.selectSidebarDestination(.gateway) },
+                openVoiceSettings: { self.selectSettingsRoute(.voice) })
         case .chat:
             ChatProTab(
                 headerLeadingAction: self.sidebarHeaderLeadingAction,
