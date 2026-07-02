@@ -35,6 +35,7 @@ final class TalkModeManager: NSObject {
     private static let defaultModelIdFallback = "eleven_v3"
     private static let defaultRealtimeModelIdFallback = "gpt-realtime-2"
     private static let defaultTalkProvider = "elevenlabs"
+    private static let defaultElevenLabsVoiceId = "NWNKFItRDuolV6H0gABQ"
     private static let defaultSilenceTimeoutMs = TalkDefaults.silenceTimeoutMs
     private static let redactedConfigSentinel = "__OPENCLAW_REDACTED__"
     private static let realtimePrefetchExpiryLeewaySeconds: TimeInterval = 30
@@ -2771,8 +2772,14 @@ extension TalkModeManager {
         self.realtimeProvider = routing.realtimeProvider
         self.realtimeModelId = routing.realtimeModelId
         self.realtimeVoiceId = realtimeVoiceId
-        self.defaultVoiceId = parsed.defaultVoiceId
-        self.voiceAliases = parsed.voiceAliases
+        self.defaultVoiceId = routing.route == .localElevenLabs
+            ? Self.defaultElevenLabsVoiceId
+            : parsed.defaultVoiceId
+        var voiceAliases = parsed.voiceAliases
+        voiceAliases["neil"] = Self.defaultElevenLabsVoiceId
+        voiceAliases["neil barnett"] = Self.defaultElevenLabsVoiceId
+        voiceAliases["dad"] = Self.defaultElevenLabsVoiceId
+        self.voiceAliases = voiceAliases
         if !self.voiceOverrideActive {
             self.currentVoiceId = self.defaultVoiceId
         }

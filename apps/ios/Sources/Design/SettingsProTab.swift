@@ -15,7 +15,7 @@ struct SettingsProTab: View {
     @AppStorage("screen.preventSleep") var preventSleep: Bool = true
     @AppStorage("talk.enabled") var talkEnabled: Bool = false
     @AppStorage(TalkModeProviderSelection.storageKey) var talkProviderSelectionRaw: String =
-        TalkModeProviderSelection.gatewayDefault.rawValue
+        TalkModeProviderSelection.defaultSelection.rawValue
     @AppStorage(TalkModeRealtimeVoiceSelection.storageKey) var talkRealtimeVoiceSelectionRaw: String = ""
     @AppStorage(TalkSpeechLocale.storageKey) var talkSpeechLocale: String = TalkSpeechLocale.automaticID
     @AppStorage("talk.button.enabled") var talkButtonEnabled: Bool = true

@@ -67,19 +67,21 @@ struct RootTabsSourceGuardTests {
         #expect(!drawerContent.contains("NavigationSplitView"))
     }
 
-    @Test func `phone tab bar keeps chat first product order`() throws {
+    @Test func `phone tab bar keeps home first product order`() throws {
         let source = try String(contentsOf: Self.rootTabsSourceURL(), encoding: .utf8)
         let phoneTabContent = try Self.extract(
             source,
             from: "private var phoneTabContent: some View",
             to: "private var sidebarSplitContent: some View")
 
+        let homeRange = try #require(phoneTabContent.range(of: "presentation: .home"))
         let chatRange = try #require(phoneTabContent.range(of: "ChatProTab(openSettings:"))
-        let talkRange = try #require(phoneTabContent.range(of: "TalkProTab("))
+        let talkRange = try #require(phoneTabContent.range(of: "TalkProTab(", range: chatRange.upperBound ..< phoneTabContent.endIndex))
         let controlRange = try #require(phoneTabContent.range(of: "RootTabsPhoneControlHub("))
         let agentRange = try #require(phoneTabContent.range(of: "AgentProTab("))
         let settingsRange = try #require(phoneTabContent.range(of: "SettingsProTab("))
 
+        #expect(homeRange.lowerBound < chatRange.lowerBound)
         #expect(chatRange.lowerBound < talkRange.lowerBound)
         #expect(talkRange.lowerBound < controlRange.lowerBound)
         #expect(controlRange.lowerBound < agentRange.lowerBound)
@@ -536,7 +538,7 @@ struct RootTabsSourceGuardTests {
             encoding: .utf8)
 
         #expect(rootSource.matches(of: /openSettings: \{ self\.selectSidebarDestination\(\.gateway\) \}/).count >= 2)
-        #expect(rootSource.matches(of: /openVoiceSettings: \{ self\.selectSettingsRoute\(\.voice\) \}/).count == 2)
+        #expect(rootSource.matches(of: /openVoiceSettings: \{ self\.selectSettingsRoute\(\.voice\) \}/).count == 4)
         #expect(rootSource.matches(of: /gatewayAction: \{ self\.selectSidebarDestination\(\.gateway\) \}/).count == 1)
         #expect(!rootSource.contains("showGatewayActions"))
         #expect(!rootSource.contains("gatewayActionsDialog"))

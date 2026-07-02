@@ -201,6 +201,18 @@ struct TalkGatewaySpeechClientTests {
         #expect(audioPlayer.payloads == [expectedAudio])
     }
 
+    @Test func `native elevenlabs defaults to Neil Barnett voice`() {
+        let parsed = Self.parseSpeechProvider("elevenlabs", model: "eleven_flash_v2_5")
+        let manager = TalkModeManager(allowSimulatorCapture: true)
+        manager._test_applyLoadedTalkConfig(parsed, providerSelection: .nativeElevenLabs)
+
+        #expect(manager._test_runtimeRoute() == .localElevenLabs)
+        #expect(!manager.gatewayTalkUsesRealtime)
+        #expect(manager.gatewayTalkProviderLabel == "ElevenLabs")
+        #expect(manager.gatewayTalkDefaultVoiceId == "NWNKFItRDuolV6H0gABQ")
+        #expect(manager.gatewayTalkVoiceModeSubtitle?.contains("Neil Barnett") == true)
+    }
+
     @Test func `persisted voice and model overrides reach later gateway requests`() async {
         let parsed = Self.parseSpeechProvider("xiaomi")
         let synthesizer = RecordingGatewaySpeechSynthesizer(audio: TalkGatewaySpeechAudio(

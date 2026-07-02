@@ -20,6 +20,7 @@ struct RootTabs: View {
     @AppStorage("gateway.manual.host") private var manualGatewayHost: String = ""
     @AppStorage("onboarding.quickSetupDismissed") private var quickSetupDismissed: Bool = false
     @AppStorage("canvas.debugStatusEnabled") private var canvasDebugStatusEnabled: Bool = false
+    @AppStorage("tedbots.talkDefaults.neilElevenLabsApplied") private var tedBotsTalkDefaultsApplied: Bool = false
     @AppStorage(AppAppearancePreference.storageKey) private var appearancePreferenceRaw: String =
         AppAppearancePreference.system.rawValue
     @State private var selectedTab: AppTab = Self.initialTab
@@ -710,6 +711,7 @@ struct RootTabs: View {
             .onAppear { self.maybeShowQuickSetup() }
             .onAppear { self.applyInitialAppearanceIfNeeded() }
             .onAppear { self.applyInitialChatSessionIfNeeded() }
+            .onAppear { self.applyTedBotsTalkDefaultsIfNeeded() }
             .onChange(of: self.preventSleep) { _, _ in self.updateIdleTimer() }
             .onChange(of: self.appModel.talkMode.isEnabled) { _, _ in self.updateIdleTimer() }
             .onChange(of: self.scenePhase) { _, newValue in
@@ -1168,6 +1170,15 @@ extension RootTabs {
         self.didApplyInitialAppearance = true
         guard let preference = AppAppearancePreference.launchArgumentPreference else { return }
         self.appearancePreferenceRaw = preference.rawValue
+    }
+
+    private func applyTedBotsTalkDefaultsIfNeeded() {
+        guard !self.tedBotsTalkDefaultsApplied else { return }
+        self.tedBotsTalkDefaultsApplied = true
+        UserDefaults.standard.set(
+            TalkModeProviderSelection.defaultSelection.rawValue,
+            forKey: TalkModeProviderSelection.storageKey)
+        self.appModel.talkMode.applyProviderSelectionChanged()
     }
 
     private func maybeShowQuickSetup() {

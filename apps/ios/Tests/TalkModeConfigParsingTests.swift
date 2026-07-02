@@ -120,6 +120,12 @@ import Testing
         #expect(TalkModeRealtimeVoiceSelection.resolvedOverride("unknown") == nil)
     }
 
+    @Test func defaultTalkProviderSelectionUsesNativeElevenLabs() {
+        #expect(TalkModeProviderSelection.resolved(nil) == .nativeElevenLabs)
+        #expect(TalkModeProviderSelection.resolved("") == .nativeElevenLabs)
+        #expect(TalkModeProviderSelection.resolved("gateway") == .gatewayDefault)
+    }
+
     @Test func formatsOpenAIRealtimeVoiceMode() {
         let descriptor = TalkVoiceModeDescriptorBuilder.build(
             providerId: "openai",

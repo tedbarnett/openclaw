@@ -168,7 +168,10 @@ enum TalkVoiceModeDescriptorBuilder {
     }
 
     private static func voiceLabel(_ voice: String) -> String {
-        TalkModeRealtimeVoiceSelection.voices.contains(voice)
+        if voice == "NWNKFItRDuolV6H0gABQ" {
+            return "Neil Barnett"
+        }
+        return TalkModeRealtimeVoiceSelection.voices.contains(voice)
             ? TalkModeRealtimeVoiceSelection.label(for: voice)
             : voice
     }
@@ -199,6 +202,7 @@ enum TalkModeProviderSelection: String, CaseIterable, Identifiable {
     case openAIRealtime = "openai-realtime"
 
     static let storageKey = "talk.providerSelection"
+    static let defaultSelection: TalkModeProviderSelection = .nativeElevenLabs
 
     var id: String {
         rawValue
@@ -217,7 +221,7 @@ enum TalkModeProviderSelection: String, CaseIterable, Identifiable {
 
     static func resolved(_ raw: String?) -> TalkModeProviderSelection {
         let trimmed = (raw ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-        return TalkModeProviderSelection(rawValue: trimmed) ?? .gatewayDefault
+        return TalkModeProviderSelection(rawValue: trimmed) ?? Self.defaultSelection
     }
 }
 
