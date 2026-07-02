@@ -2,6 +2,39 @@
 
 This iOS app is super-alpha and internal-use only. The first public App Store release targets iPhone and connects to an OpenClaw Gateway as a `role: node`.
 
+## TedBots Fork
+
+TedBots is Ted Barnett's custom iOS build on branch `ted-ios-custom` in the `tedbarnett/openclaw` fork. It is intended for local device testing and private customization, not for upstream OpenClaw release.
+
+Current TedBots configuration:
+
+- Display name: `TedBots`
+- Bundle ID base: `ai.gabrielbarnett.tedbots`
+- URL scheme: `tedbots://`
+- Signing team: `63K8J7P389`
+- Signing mode: automatic Apple Development for local Debug device builds.
+- Icon/background artwork: TedBots Helm artwork stored in the app icon and `OpenClawIcon` asset sets.
+- Default first tab: `Home`.
+- Home surface: TedBots Helm artwork as a soft full-screen background with the real Talk UI embedded on top.
+- Default Talk provider: native ElevenLabs.
+- Default ElevenLabs voice: Neil Barnett (`NWNKFItRDuolV6H0gABQ`).
+- Voice aliases: `neil`, `neil barnett`, and `dad`.
+
+Local TedBots build flow:
+
+```bash
+pnpm ios:gen
+IOS_DEST='platform=iOS,id=00008150-0001784802F0401C' pnpm ios:build
+xcrun devicectl device install app --device 00008150-0001784802F0401C apps/ios/build/Build/Products/Debug-iphoneos/OpenClaw.app
+xcrun devicectl device process launch --device 00008150-0001784802F0401C ai.gabrielbarnett.tedbots
+```
+
+Notes:
+
+- Debug device builds strip Push/App Group entitlements so the existing wildcard development profile can install on Ted's iPhone. Release/App Store paths still need proper profiles and capabilities.
+- WebRTC is resolved through the local wrapper package in `apps/ios/Vendor/WebRTC` after running the checksum-verified download script, avoiding the SwiftPM remote binary package hang.
+- The unrelated `apps/swabble/Package.resolved` drift is intentionally not part of TedBots commits.
+
 ## Distribution Status
 
 - Public distribution: App Store Connect app created; production signing is configured through the App Store release Fastlane path.

@@ -23,6 +23,22 @@ It answers you on the channels you already use. It can speak and listen on macOS
 
 If you want a personal, single-user assistant that feels local, fast, and always-on, this is it.
 
+## TedBots iOS fork
+
+This branch carries Ted Barnett's custom iOS build, **TedBots**. It keeps the upstream OpenClaw codebase and license intact while applying private branding and local signing changes for side-by-side testing on Ted's devices.
+
+- Branch: `ted-ios-custom`
+- Fork remote: `https://github.com/tedbarnett/openclaw`
+- iOS app path: `apps/ios/`
+- App display name: `TedBots`
+- Bundle ID base: `ai.gabrielbarnett.tedbots`
+- URL scheme: `tedbots://`
+- Signing team: `63K8J7P389`
+- Default Home tab embeds the Talk UI over the TedBots Helm artwork.
+- Default Talk provider is ElevenLabs with the Neil Barnett voice (`NWNKFItRDuolV6H0gABQ`).
+
+For build details and local deploy commands, see [`apps/ios/README.md`](apps/ios/README.md).
+
 Supported channels include: WhatsApp, Telegram, Slack, Discord, Google Chat, Signal, iMessage, IRC, Microsoft Teams, Matrix, Feishu, LINE, Mattermost, Nextcloud Talk, Nostr, Synology Chat, Tlon, Twitch, Zalo, Zalo Personal, WeChat, QQ, WebChat.
 
 [Website](https://openclaw.ai) · [Docs](https://docs.openclaw.ai) · [Vision](VISION.md) · [Third-party notices](THIRD_PARTY_NOTICES.md) · [DeepWiki](https://deepwiki.com/openclaw/openclaw) · [Getting Started](https://docs.openclaw.ai/start/getting-started) · [Updating](https://docs.openclaw.ai/install/updating) · [Showcase](https://docs.openclaw.ai/start/showcase) · [FAQ](https://docs.openclaw.ai/help/faq) · [Onboarding](https://docs.openclaw.ai/start/wizard) · [Nix](https://github.com/openclaw/nix-openclaw) · [Docker](https://docs.openclaw.ai/install/docker) · [Discord](https://discord.gg/clawd)
