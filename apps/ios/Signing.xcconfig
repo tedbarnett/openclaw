@@ -4,20 +4,21 @@
 
 #include "Config/Version.xcconfig"
 
-OPENCLAW_CODE_SIGN_STYLE = Manual
+OPENCLAW_CODE_SIGN_STYLE = Automatic
 OPENCLAW_CODE_SIGN_IDENTITY = Apple Development
 OPENCLAW_CODE_SIGN_ENTITLEMENTS = Sources/OpenClaw.entitlements
-OPENCLAW_DEVELOPMENT_TEAM = FWJYW4S8P8
+OPENCLAW_SHARE_CODE_SIGN_ENTITLEMENTS = ShareExtension/OpenClawShareExtension.entitlements
+OPENCLAW_DEVELOPMENT_TEAM = 63K8J7P389
 
-OPENCLAW_APP_BUNDLE_ID = ai.openclawfoundation.app
-OPENCLAW_SHARE_BUNDLE_ID = ai.openclawfoundation.app.share
-OPENCLAW_APP_GROUP_ID = group.ai.openclawfoundation.app.shared
-OPENCLAW_WATCH_APP_BUNDLE_ID = ai.openclawfoundation.app.watchkitapp
-OPENCLAW_ACTIVITY_WIDGET_BUNDLE_ID = ai.openclawfoundation.app.activitywidget
+OPENCLAW_APP_BUNDLE_ID = ai.gabrielbarnett.tedbots
+OPENCLAW_SHARE_BUNDLE_ID = ai.gabrielbarnett.tedbots.share
+OPENCLAW_APP_GROUP_ID = group.ai.gabrielbarnett.tedbots.shared
+OPENCLAW_WATCH_APP_BUNDLE_ID = ai.gabrielbarnett.tedbots.watchkitapp
+OPENCLAW_ACTIVITY_WIDGET_BUNDLE_ID = ai.gabrielbarnett.tedbots.activitywidget
 OPENCLAW_APNS_ENTITLEMENT_ENVIRONMENT = development
 
-OPENCLAW_APP_PROFILE = ai.openclawfoundation.app Development
-OPENCLAW_SHARE_PROFILE = ai.openclawfoundation.app.share Development
+OPENCLAW_APP_PROFILE =
+OPENCLAW_SHARE_PROFILE =
 OPENCLAW_ACTIVITY_WIDGET_PROFILE =
 OPENCLAW_WATCH_APP_PROFILE =
 

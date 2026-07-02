@@ -16,8 +16,7 @@ packages:
   Swabble:
     path: ../swabble
   WebRTC:
-    url: https://github.com/stasel/WebRTC.git
-    exactVersion: 147.0.0
+    path: Vendor/WebRTC
 
 schemes:
   OpenClaw:
@@ -122,7 +121,7 @@ targets:
         ENABLE_APP_INTENTS_METADATA_GENERATION: NO
       configs:
         Debug:
-          OPENCLAW_CODE_SIGN_ENTITLEMENTS: Sources/OpenClaw.entitlements
+          OPENCLAW_CODE_SIGN_ENTITLEMENTS: ""
           OPENCLAW_APNS_ENTITLEMENT_ENVIRONMENT: development
           OPENCLAW_PUSH_MODE: localSandbox
           OPENCLAW_PUSH_RELAY_BASE_URL: ""
@@ -195,7 +194,7 @@ targets:
     settings:
       base:
         CODE_SIGN_IDENTITY: "$(OPENCLAW_CODE_SIGN_IDENTITY)"
-        CODE_SIGN_ENTITLEMENTS: ShareExtension/OpenClawShareExtension.entitlements
+        CODE_SIGN_ENTITLEMENTS: "$(OPENCLAW_SHARE_CODE_SIGN_ENTITLEMENTS)"
         CODE_SIGN_STYLE: "$(OPENCLAW_CODE_SIGN_STYLE)"
         DEVELOPMENT_TEAM: "$(OPENCLAW_DEVELOPMENT_TEAM)"
         ENABLE_APPINTENTS_METADATA: NO
@@ -205,6 +204,9 @@ targets:
         TARGETED_DEVICE_FAMILY: "1,2"
         SWIFT_VERSION: "6.0"
         SWIFT_STRICT_CONCURRENCY: complete
+      configs:
+        Debug:
+          OPENCLAW_SHARE_CODE_SIGN_ENTITLEMENTS: ""
     info:
       path: ShareExtension/Info.plist
       properties:
