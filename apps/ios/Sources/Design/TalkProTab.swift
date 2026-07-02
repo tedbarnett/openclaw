@@ -130,6 +130,7 @@ struct TalkProTab: View {
                     }
                     self.voiceHeroCard
                     if self.presentation == .home {
+                        self.homeStatusStrip
                         self.homeVoicePickerCard
                     } else {
                         self.conversationCard
@@ -190,13 +191,31 @@ struct TalkProTab: View {
 
     private var voiceHeroCard: some View {
         CommandPanel(tint: self.state.color, isProminent: true, padding: self.presentation == .home ? 18 : 16) {
-            VStack(alignment: .center, spacing: self.presentation == .home ? 18 : 16) {
-                TalkProOrb(
-                    mode: self.state.waveformMode(micLevel: self.appModel.talkMode.micLevel),
-                    color: self.state.color,
-                    systemImage: self.state.icon)
-                    .frame(height: self.presentation == .home ? 138 : 188)
-                    .accessibilityHidden(true)
+            VStack(alignment: .center, spacing: self.presentation == .home ? 16 : 16) {
+                ZStack {
+                    if self.presentation == .home {
+                        Image("OpenClawIcon")
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 146, height: 146)
+                            .clipShape(Circle())
+                            .overlay {
+                                Circle()
+                                    .strokeBorder(self.state.color.opacity(0.20), lineWidth: 1)
+                            }
+                            .shadow(color: self.state.color.opacity(0.20), radius: 22, y: 10)
+                            .opacity(0.92)
+                            .accessibilityHidden(true)
+                    }
+                    TalkProOrb(
+                        mode: self.state.waveformMode(micLevel: self.appModel.talkMode.micLevel),
+                        color: self.state.color,
+                        systemImage: self.state.icon)
+                        .frame(height: self.presentation == .home ? 132 : 188)
+                        .blendMode(self.presentation == .home ? .plusLighter : .normal)
+                        .accessibilityHidden(true)
+                }
+                .frame(height: self.presentation == .home ? 148 : 188)
 
                 VStack(spacing: 5) {
                     Text(self.state.title)
@@ -227,6 +246,57 @@ struct TalkProTab: View {
             }
         }
         .padding(.horizontal, OpenClawProMetric.pagePadding)
+    }
+
+    private var homeStatusStrip: some View {
+        CommandPanel(tint: OpenClawBrand.info, padding: 10) {
+            HStack(spacing: 8) {
+                self.homeStatusPill(
+                    icon: "waveform",
+                    title: "Voice",
+                    value: self.homeSelectedElevenLabsVoiceLabel,
+                    color: OpenClawBrand.accent)
+                self.homeStatusPill(
+                    icon: self.state.icon,
+                    title: "Talk",
+                    value: self.state.chipText,
+                    color: self.state.color)
+                self.homeStatusPill(
+                    icon: self.talkSpeakerphoneEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill",
+                    title: "Audio",
+                    value: self.talkSpeakerphoneEnabled ? "Speaker" : "Phone",
+                    color: OpenClawBrand.info)
+            }
+        }
+        .padding(.horizontal, OpenClawProMetric.pagePadding)
+    }
+
+    private func homeStatusPill(icon: String, title: String, value: String, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            HStack(spacing: 5) {
+                Image(systemName: icon)
+                    .font(.caption2.weight(.bold))
+                Text(title)
+                    .font(.caption2.weight(.bold))
+            }
+            .foregroundStyle(color)
+            Text(value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "—" : value)
+                .font(.caption.weight(.semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+                .foregroundStyle(.primary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 8)
+        .background {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(color.opacity(0.10))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .strokeBorder(color.opacity(0.16), lineWidth: 1)
+                }
+        }
     }
 
     private var conversationCard: some View {
@@ -260,22 +330,25 @@ struct TalkProTab: View {
                     .padding(.top, 11)
                     .padding(.bottom, 3)
                 HStack(spacing: 10) {
-                    Image(systemName: "person.wave.2.fill")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(self.state.color)
-                        .frame(width: 30, height: 30)
-                        .background {
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(self.state.color.opacity(0.11))
-                        }
+                    ZStack {
+                        Image("OpenClawIcon")
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 42, height: 42)
+                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            .opacity(0.92)
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .strokeBorder(self.state.color.opacity(0.24), lineWidth: 1)
+                    }
+                    .frame(width: 42, height: 42)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Selected")
+                        Text("Selected character")
                             .font(.caption2.weight(.medium))
                             .foregroundStyle(.secondary)
                         Text(self.homeSelectedElevenLabsVoiceLabel)
-                            .font(.subheadline.weight(.semibold))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.82)
+                            .font(.headline.weight(.bold))
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.84)
                     }
                     Spacer(minLength: 8)
                     self.homeVoiceMenu
@@ -574,6 +647,7 @@ struct TalkProTab: View {
         defer { self.isLoadingHomeElevenLabsVoices = false }
         do {
             let voices = try await ElevenLabsTTSClient(apiKey: apiKey).listVoices()
+            TalkModeElevenLabsVoiceSelection.cacheVoiceNames(voices)
             self.homeElevenLabsVoices = voices
             self.homeElevenLabsVoiceStatus = voices.isEmpty ? "No ElevenLabs voices found." : ""
         } catch {
@@ -664,19 +738,28 @@ private struct HelmHomeBackground: View {
     var body: some View {
         ZStack {
             CommandControlBackground()
+            LinearGradient(
+                colors: [
+                    OpenClawBrand.info.opacity(self.colorScheme == .dark ? 0.18 : 0.10),
+                    OpenClawBrand.accent.opacity(self.colorScheme == .dark ? 0.12 : 0.08),
+                    Color.clear,
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing)
             Image("OpenClawIcon")
                 .resizable()
                 .scaledToFill()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .opacity(self.colorScheme == .dark ? 0.18 : 0.10)
-                .blur(radius: 2.5)
-                .saturation(1.08)
+                .frame(width: 420, height: 520)
+                .opacity(self.colorScheme == .dark ? 0.30 : 0.19)
+                .blur(radius: 1.2)
+                .saturation(1.12)
+                .offset(x: 82, y: -54)
                 .accessibilityHidden(true)
             LinearGradient(
                 colors: [
-                    Color(uiColor: .systemBackground).opacity(self.colorScheme == .dark ? 0.82 : 0.70),
-                    Color(uiColor: .systemGroupedBackground).opacity(self.colorScheme == .dark ? 0.76 : 0.74),
-                    Color(uiColor: .systemBackground).opacity(self.colorScheme == .dark ? 0.90 : 0.82),
+                    Color(uiColor: .systemBackground).opacity(self.colorScheme == .dark ? 0.74 : 0.56),
+                    Color(uiColor: .systemGroupedBackground).opacity(self.colorScheme == .dark ? 0.70 : 0.68),
+                    Color(uiColor: .systemBackground).opacity(self.colorScheme == .dark ? 0.88 : 0.80),
                 ],
                 startPoint: .top,
                 endPoint: .bottom)

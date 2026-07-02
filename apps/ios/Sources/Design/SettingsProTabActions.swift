@@ -695,6 +695,7 @@ extension SettingsProTab {
         defer { self.isLoadingElevenLabsVoices = false }
         do {
             let voices = try await ElevenLabsTTSClient(apiKey: apiKey).listVoices()
+            TalkModeElevenLabsVoiceSelection.cacheVoiceNames(voices)
             self.elevenLabsVoices = voices
             self.elevenLabsVoicesStatus = voices.isEmpty ? "No voices returned." : "\(voices.count) voices loaded."
         } catch {

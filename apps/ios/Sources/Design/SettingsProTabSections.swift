@@ -930,7 +930,10 @@ extension SettingsProTab {
                                 selected != TalkModeElevenLabsVoiceSelection.defaultVoiceId,
                                 !self.elevenLabsVoices.contains(where: { $0.voiceId == selected })
                             {
-                                Text(selected).tag(selected)
+                                Text(TalkModeElevenLabsVoiceSelection.label(
+                                    for: selected,
+                                    voices: self.elevenLabsVoices))
+                                    .tag(selected)
                             }
                         }
                         VStack(alignment: .leading, spacing: 8) {

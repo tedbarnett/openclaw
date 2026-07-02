@@ -326,6 +326,7 @@ enum TalkModeRealtimeVoiceSelection {
 
 enum TalkModeElevenLabsVoiceSelection {
     static let storageKey = "talk.elevenlabs.voiceSelection"
+    private static let voiceNameCacheKey = "talk.elevenlabs.voiceNameCache"
     static let defaultVoiceId = "NWNKFItRDuolV6H0gABQ"
     static let defaultVoiceName = "Neil Barnett"
 
@@ -346,7 +347,36 @@ enum TalkModeElevenLabsVoiceSelection {
         {
             return name
         }
+        if let name = Self.cachedVoiceName(for: trimmed) {
+            return name
+        }
         return trimmed
+    }
+
+    static func cacheVoiceNames(_ voices: [ElevenLabsVoice]) {
+        var cached = Self.cachedVoiceNames()
+        for voice in voices {
+            let voiceId = voice.voiceId.trimmingCharacters(in: .whitespacesAndNewlines)
+            let name = (voice.name ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !voiceId.isEmpty, !name.isEmpty else { continue }
+            cached[voiceId] = name
+        }
+        guard let data = try? JSONEncoder().encode(cached) else { return }
+        UserDefaults.standard.set(data, forKey: Self.voiceNameCacheKey)
+    }
+
+    private static func cachedVoiceName(for voiceId: String) -> String? {
+        let name = Self.cachedVoiceNames()[voiceId]?.trimmingCharacters(in: .whitespacesAndNewlines)
+        return name?.isEmpty == false ? name : nil
+    }
+
+    private static func cachedVoiceNames() -> [String: String] {
+        guard let data = UserDefaults.standard.data(forKey: voiceNameCacheKey),
+              let names = try? JSONDecoder().decode([String: String].self, from: data)
+        else {
+            return [:]
+        }
+        return names
     }
 }
 
